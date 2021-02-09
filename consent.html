@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<script>
+  		if (navigator.geolocation) {
+    		navigator.geolocation.getCurrentPosition(position => {
+					document.write("generating weather info...")
+					window.location.replace(
+						"?lattlong=" + position.coords.latitude
+						             + ","
+						             + position.coords.longitude);
+				});
+  		}
+		</script>
+	</head>
+	<body>
+	</body>
+</html>
