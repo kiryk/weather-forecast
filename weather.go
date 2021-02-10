@@ -210,7 +210,7 @@ func showWeather(w http.ResponseWriter, r *http.Request) {
 	weatherQuery := fmt.Sprintf(weatherFmt, locations[0].Woeid)
 	if err := fetchStruct(weatherQuery, &weather); err != nil {
 		http.Error(w, "user's location was not found",
-							 http.StatusInternalServerError)
+		           http.StatusInternalServerError)
 		log.Println(err)
 		return
 	}
@@ -222,7 +222,7 @@ func showWeather(w http.ResponseWriter, r *http.Request) {
 
 	if err := pageTpl.Execute(w, weather); err != nil {
 		http.Error(w, "user's location was not found",
-							 http.StatusInternalServerError)
+		           http.StatusInternalServerError)
 		log.Println(err)
 		return
 	}
