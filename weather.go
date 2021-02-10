@@ -13,12 +13,14 @@ import (
 
 var port = flag.String("p", "80", "port number")
 
+// Formats for API queries
 var locationFmt = "http://www.metaweather.com/api/location/search/?lattlong=%s"
 var weatherFmt = "http://www.metaweather.com/api/location/%d/"
 var publicIpFmt = "https://ip.seeip.org/json"
 var geolocationFmt = "http://ip-api.com/json/%s"
 
-var weatherTpl *template.Template
+// Weather forecast page template
+var pageTpl *template.Template
 
 // Used for seeip.org responses
 type SeeIpResponse struct {
@@ -208,7 +210,7 @@ func showWeather(w http.ResponseWriter, r *http.Request) {
 		dateToReadable(&weather.Forecasts[i].ApplicableDate);
 	}
 
-	if err := weatherTpl.Execute(w, weather); err != nil {
+	if err := pageTpl.Execute(w, weather); err != nil {
 		log.Println(err)
 		return
 	}
@@ -219,7 +221,7 @@ func main() {
 
 	flag.Parse()
 
-	weatherTpl, err = template.New("weather.html").ParseFiles("weather.html")
+	pageTpl, err = template.New("page.tpl").ParseFiles("page.tpl")
 	if err != nil {
 		log.Fatal(err)
 	}
