@@ -97,12 +97,14 @@
 		{{end}}
 		<details>
  			<summary>Details about this forecast</summary>
-			<p>The information for the forecast has been gathered from the following sources:</p>
-			<ul>
-				{{range .Sources}}<li><a href="{{.URL}}">{{.Title}}</a></li>{{end}}
-			</ul>
-			<p>Which in turn were collected and shared through <a href="https://www.metaweather.com">MetaWeather</a> API.</p>
-			<p>Your geolocation has been obtained thanks to <a href="https://ip-api.com">ip-api</a>.</p>
+			<p>
+				The information in the forecast comes from the following sources:
+				<ul>
+					{{range .Sources}}<li><a href="{{.URL}}">{{.Title}}</a></li>{{end}}
+				</ul>
+				and has been collected and shared by <a href="https://www.metaweather.com">MetaWeather</a> API.
+			</p>
+			<p>Your geolocation has been obtained thanks to <a href="https://ip-api.com">ip-api</a> and <a href="https://seeip.org">SeeIP</a>.</p>
 		</details>
 	</body>
 </html>
