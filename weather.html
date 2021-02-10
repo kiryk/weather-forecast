@@ -85,7 +85,7 @@
 					<img src="https://www.metaweather.com/static/img/weather/{{.WeatherStateAbbr}}.svg">
 				</p>
 				<div class="pair">
-					<p>Max: {{.MinTempCelsius}}°C</p><p>Min: {{.MaxTempCelsius}}°C</p>
+					<p>Min: {{.MinTempCelsius}}°C</p><p>Max: {{.MaxTempCelsius}}°C</p>
 				</div>
 				<div class="pair">
 					<p>Pressure: {{.AirPressureHpa}} Hpa</p><p>Wind: {{.WindSpeed}} km/h</p>
@@ -97,11 +97,12 @@
 		{{end}}
 		<details>
  			<summary>Details about this forecast</summary>
-			<p>The information for this forecast has been gathered from the following sources:</p>
+			<p>The information for the forecast has been gathered from the following sources:</p>
 			<ul>
 				{{range .Sources}}<li><a href="{{.URL}}">{{.Title}}</a></li>{{end}}
 			</ul>
-			<p>This application uses <a href="https://www.metaweather.com">MetaWeather</a> API.</p>
+			<p>Which in turn were collected and shared through <a href="https://www.metaweather.com">MetaWeather</a> API.</p>
+			<p>Your geolocation has been obtained thanks to <a href="https://ip-api.com">ip-api</a>.</p>
 		</details>
 	</body>
 </html>
