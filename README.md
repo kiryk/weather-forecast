@@ -38,4 +38,4 @@ Besides Go's standard library, the application uses a few external APIs to accom
 ## What could be changed
 First of all, the server works over HTTP instead of HTTPS. This is however intended as the app was meant to be simple.
 
-Secondly, the MetaWeather shares a little bit more information than `weather-forecast` presents to the user, it is however fetched by the server anyway, so more information can be easily added to the website just by making small changes in the `page.tpl` file. So far it hasn't been done only to keep the layout clear.
+Secondly, the server fetches a little bit more data than is presented to the user, so more information can be easily added to the website by making small changes in the `page.tpl` file. It hasn't been done only to keep the layout clear.
