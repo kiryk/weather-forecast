@@ -178,10 +178,14 @@ func showWeather(w http.ResponseWriter, r *http.Request) {
 			// we failed, but perhaps the IP is just local
 
 			if ip, err = fetchPublicIp(); err != nil {
+				http.Error(w, "couldn't get users public IP",
+			             http.StatusInternalServerError)
 				log.Println(err)
 				return
 			}
 			if lattlong, err = fetchLattlong(ip); err != nil {
+				http.Error(w, "couldn't get users geolocation",
+				           http.StatusInternalServerError)
 				log.Println(err)
 				return
 			}
@@ -190,17 +194,23 @@ func showWeather(w http.ResponseWriter, r *http.Request) {
 
 	locationQuery := fmt.Sprintf(locationFmt, lattlong)
 	if err := fetchStruct(locationQuery, &locations); err != nil {
+		http.Error(w, "could not fetch users woeid",
+		           http.StatusInternalServerError)
 		log.Println(err)
 		return
 	}
 
 	if len(locations) < 1 {
+		http.Error(w, "user's location was not found",
+		           http.StatusInternalServerError)
 		log.Println(fmt.Errorf("user's location was not found"))
 		return
 	}
 
 	weatherQuery := fmt.Sprintf(weatherFmt, locations[0].Woeid)
 	if err := fetchStruct(weatherQuery, &weather); err != nil {
+		http.Error(w, "user's location was not found",
+							 http.StatusInternalServerError)
 		log.Println(err)
 		return
 	}
@@ -211,6 +221,8 @@ func showWeather(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := pageTpl.Execute(w, weather); err != nil {
+		http.Error(w, "user's location was not found",
+							 http.StatusInternalServerError)
 		log.Println(err)
 		return
 	}
