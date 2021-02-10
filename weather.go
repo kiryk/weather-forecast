@@ -5,31 +5,63 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
-	//"io/ioutil"
 	"log"
 	"net/http"
-	//"os"
-	//"path"
-	//"sort"
-	//"strings"
+	"strings"
 	"time"
 )
 
 var port = flag.String("p", "80", "port number")
 
-var locationFmt = "http://www.metaweather.com/api/location/search/?lattlong=%s"
-var weatherFmt = "http://www.metaweather.com/api/location/%d/"
+var locationFmt = "http:
+var weatherFmt = "http:
+var publicIpFmt = "https:
+var geolocationFmt = "http:
 
-var consentTpl *template.Template
 var weatherTpl *template.Template
+
+
+type SeeIpResponse struct {
+	Ip string `json:"ip"`
+}
+
+
+type IPApiResponse struct {
+	Status  string  `json:"status"`
+	Message string  `json:"message"`
+	Latt    float32 `json:"lat"`
+	Long    float32 `json:"lon"`
+}
+
+
+type Weather struct {
+	Location
+
+	Time      string     `json:"time"`
+	Timezone  string     `json:"timezone_name"`
+	Sunrise   string     `json:"sun_rise"`
+	Sunset    string     `json:"sun_set"`
+
+	Parent    Location   `json:"parent"`
+	Forecasts []Forecast `json:"consolidated_weather"`
+	Sources   []Source   `json:"sources"`
+}
+
 
 type Location struct {
 	Title        string `json:"title"`
 	LocationType string `json:"location_type"`
 	Lattlong     string `json:"latt_long"`
 	Woeid        int    `json:"woeid"`
-//Distance     int    `json:"distance"`
+
 }
+
+
+type Source struct {
+	Title string `json:"title"`
+	URL   string `json:"url"`
+}
+
 
 type Forecast struct {
 	Id               int     `json:"id"`
@@ -48,23 +80,7 @@ type Forecast struct {
 	QualityPercent   float32 `json:"predictability"`
 }
 
-type Source struct {
-	Title string `json:"title"`
-	URL   string `json:"url"`
-}
 
-type Weather struct {
-	Location
-
-	Time      string     `json:"time"`
-	Timezone  string     `json:"timezone_name"`
-	Sunrise   string     `json:"sun_rise"`
-	Sunset    string     `json:"sun_set"`
-
-	Parent    Location   `json:"parent"`
-	Forecasts []Forecast `json:"consolidated_weather"`
-	Sources   []Source   `json:"sources"`
-}
 
 func imperialToMetric(f *Forecast) {
 	const KmPerMile = 1.609344
@@ -72,6 +88,10 @@ func imperialToMetric(f *Forecast) {
 	f.WindSpeed *= KmPerMile
 	f.Visibility *= KmPerMile
 }
+
+
+
+
 
 func dateToReadable(date *string) {
 	wt, _ := time.Parse("2006-01-02", *date)
@@ -87,6 +107,8 @@ func dateToReadable(date *string) {
 		*date = wt.Format("Monday, 2 Jan 2006")
 	}
 }
+
+
 
 func fetchStruct(query string, data interface{}) error {
 	client := http.Client{}
@@ -108,12 +130,33 @@ func fetchStruct(query string, data interface{}) error {
 	return nil
 }
 
-func askCoords(w http.ResponseWriter, r *http.Request) {
-	if err := consentTpl.Execute(w, nil); err != nil {
-		log.Println(err)
-		return
+
+func fetchLattlong(ip string) (string, error) {
+	var resp IPApiResponse
+
+	query := fmt.Sprintf(geolocationFmt, ip)
+	if err := fetchStruct(query, &resp); err != nil {
+		return "", err
 	}
+
+	if resp.Status != "success" {
+		return "", fmt.Errorf("%s geolocation failed: %s", ip, resp.Message)
+	}
+
+	return fmt.Sprintf("%g,%g", resp.Latt, resp.Long), nil
 }
+
+
+func fetchPublicIp() (string, error) {
+	var resp SeeIpResponse
+
+	if err := fetchStruct(publicIpFmt, &resp); err != nil {
+		return "", fmt.Errorf("coudln't get public ip: %e", err)
+	}
+
+	return resp.Ip, nil
+}
+
 
 func showWeather(w http.ResponseWriter, r *http.Request) {
 	var locations []Location
@@ -122,11 +165,25 @@ func showWeather(w http.ResponseWriter, r *http.Request) {
 
 	query := r.URL.Query()
 
-	if lattlongs, ok := query["lattlong"]; !ok {
-		askCoords(w, r)
-		return
-	} else {
+	if lattlongs, ok := query["lattlong"]; ok {
 		lattlong = lattlongs[0]
+	} else {
+		var err error
+		var ip string
+
+		ip = r.RemoteAddr[:strings.IndexByte(r.RemoteAddr, ':')]
+		if lattlong, err = fetchLattlong(ip); err != nil {
+
+
+			if ip, err = fetchPublicIp(); err != nil {
+				log.Println(err)
+				return
+			}
+			if lattlong, err = fetchLattlong(ip); err != nil {
+				log.Println(err)
+				return
+			}
+		}
 	}
 
 	locationQuery := fmt.Sprintf(locationFmt, lattlong)
@@ -136,7 +193,7 @@ func showWeather(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(locations) < 1 {
-		askCoords(w, r)
+		log.Println(fmt.Errorf("user's location was not found"))
 		return
 	}
 
@@ -162,21 +219,11 @@ func main() {
 
 	flag.Parse()
 
-	/*Funcs(template.FuncMap{"title": strings.Title, "cutext": cutext})*/
-	consentTpl, err = template.New("consent.html").ParseFiles("consent.html")
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	weatherTpl, err = template.New("weather.html").ParseFiles("weather.html")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	http.HandleFunc("/", showWeather)
-	http.HandleFunc("/theme.css", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "/theme.css")
-	})
-
 	log.Fatal(http.ListenAndServe(":"+*port, nil))
 }
