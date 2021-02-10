@@ -1,7 +1,7 @@
 # weather-forecast
 
 ## Description
-`weather-forecast` is a simple http server written in Go that shows local weather forecast for the nearest days in a form of a minimalist website.
+`weather-forecast` is a simple HTTP server written in Go that shows local weather forecast for the nearest days in a form of a minimalist website.
 
 ## Compilation
 In order to compile the source, enter the source code directory and type:
@@ -33,4 +33,9 @@ Besides Go's standard library, the application uses a few external APIs to accom
 
 - [MetaWeather](www.metaweather.com), to obtain weather data,
 - [ip-api](ip-api.com), to approximate user's geolocation,
-- [SeeIP](ip.seeip.org), to easily obtain public IP of the server.
+- [SeeIP](seeip.org), to easily obtain public IP of the server.
+
+## What could be changed
+First of all, the server works over HTTP instead of HTTPS. This is however intended as the app was meant to be simple.
+
+Secondly, the MetaWeather shares a little bit more information than `weather-forecast` presents to the user, it is however fetched by the server anyway, so more information can be easily added to the website just by making small changes in the `page.tpl` file. So far it hasn't been done only to keep the layout clear.
