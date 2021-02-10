@@ -13,19 +13,19 @@ import (
 
 var port = flag.String("p", "80", "port number")
 
-var locationFmt = "http:
-var weatherFmt = "http:
-var publicIpFmt = "https:
-var geolocationFmt = "http:
+var locationFmt = "http://www.metaweather.com/api/location/search/?lattlong=%s"
+var weatherFmt = "http://www.metaweather.com/api/location/%d/"
+var publicIpFmt = "https://ip.seeip.org/json"
+var geolocationFmt = "http://ip-api.com/json/%s"
 
 var weatherTpl *template.Template
 
-
+// Used for seeip.org responses
 type SeeIpResponse struct {
 	Ip string `json:"ip"`
 }
 
-
+// Used for ip-api responses
 type IPApiResponse struct {
 	Status  string  `json:"status"`
 	Message string  `json:"message"`
@@ -33,7 +33,7 @@ type IPApiResponse struct {
 	Long    float32 `json:"lon"`
 }
 
-
+// Full forecast data, i.e. full MetaWeather API response
 type Weather struct {
 	Location
 
@@ -47,22 +47,22 @@ type Weather struct {
 	Sources   []Source   `json:"sources"`
 }
 
-
+// Location data in MetaWeather responses
 type Location struct {
 	Title        string `json:"title"`
 	LocationType string `json:"location_type"`
 	Lattlong     string `json:"latt_long"`
 	Woeid        int    `json:"woeid"`
-
+//Distance     int    `json:"distance"`
 }
 
-
+// Source information in MetaWeather responses
 type Source struct {
 	Title string `json:"title"`
 	URL   string `json:"url"`
 }
 
-
+// A single day forecast in MetaWeather responses
 type Forecast struct {
 	Id               int     `json:"id"`
 	ApplicableDate   string  `json:"applicable_date"`
@@ -80,8 +80,8 @@ type Forecast struct {
 	QualityPercent   float32 `json:"predictability"`
 }
 
-
-
+// Some values from MetaWeather use imperial units, this function
+// scales them to metric
 func imperialToMetric(f *Forecast) {
 	const KmPerMile = 1.609344
 
@@ -89,10 +89,10 @@ func imperialToMetric(f *Forecast) {
 	f.Visibility *= KmPerMile
 }
 
-
-
-
-
+// Convert a YYYY-MM-DD date string into a nicer one, i.e.:
+// - if the day is today, change it to "Today"
+// - if the day is tomorrow, change it to "Tomorrow"
+// - otherwise format it to be like "Monday, 2 Jan 2006"
 func dateToReadable(date *string) {
 	wt, _ := time.Parse("2006-01-02", *date)
 	wy, wm, wd := wt.Date()
@@ -108,8 +108,8 @@ func dateToReadable(date *string) {
 	}
 }
 
-
-
+// Fetch a structure from a JSON API. The `data` value has to be passed
+// as a pointer to the destination structure.
 func fetchStruct(query string, data interface{}) error {
 	client := http.Client{}
 
@@ -130,7 +130,7 @@ func fetchStruct(query string, data interface{}) error {
 	return nil
 }
 
-
+// Fetch approximate geolocation using given ip.
 func fetchLattlong(ip string) (string, error) {
 	var resp IPApiResponse
 
@@ -146,7 +146,7 @@ func fetchLattlong(ip string) (string, error) {
 	return fmt.Sprintf("%g,%g", resp.Latt, resp.Long), nil
 }
 
-
+// Fetch _our_ public IP
 func fetchPublicIp() (string, error) {
 	var resp SeeIpResponse
 
@@ -157,7 +157,7 @@ func fetchPublicIp() (string, error) {
 	return resp.Ip, nil
 }
 
-
+// Generate a full page containing the forecast
 func showWeather(w http.ResponseWriter, r *http.Request) {
 	var locations []Location
 	var weather Weather
@@ -173,7 +173,7 @@ func showWeather(w http.ResponseWriter, r *http.Request) {
 
 		ip = r.RemoteAddr[:strings.IndexByte(r.RemoteAddr, ':')]
 		if lattlong, err = fetchLattlong(ip); err != nil {
-
+			// we failed, but perhaps the IP is just local
 
 			if ip, err = fetchPublicIp(); err != nil {
 				log.Println(err)
