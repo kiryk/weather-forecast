@@ -31,9 +31,9 @@ Using the `-p` flag is optional, with the default port number being `80`.
 ## Dependencies
 Besides Go's standard library, the application uses a few external APIs to accomplish some of its tasks:
 
-- [MetaWeather](www.metaweather.com), to obtain weather data,
-- [ip-api](ip-api.com), to approximate user's geolocation,
-- [SeeIP](seeip.org), to easily obtain public IP of the server.
+- [MetaWeather](https://www.metaweather.com), to obtain weather data,
+- [ip-api](https://ip-api.com), to approximate user's geolocation,
+- [SeeIP](https://seeip.org), to easily obtain public IP of the server.
 
 ## What could be changed
 First of all, the server works over HTTP instead of HTTPS. This is however intended as the app was meant to be simple.
