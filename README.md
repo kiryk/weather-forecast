@@ -26,7 +26,7 @@ To run it on Windows, type:
 weather [-p PORT-NUMBER]
 ```
 
-Using the `-p` flag is optional, with the default port numbr being `80`.
+Using the `-p` flag is optional, with the default port number being `80`.
 
 ## Dependencies
 Besides Go's standard library, the application uses a few external APIs to accomplish some of its tasks:
